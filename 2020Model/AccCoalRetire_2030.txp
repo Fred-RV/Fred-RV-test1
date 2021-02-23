@@ -1,0 +1,124 @@
+*
+* AccCoalRetire_2030.txp
+* In this policy all coal units must retire by 2030
+* This assumes other units are already retired by their 
+* existing regulatory or pre-2030 technical retirement dates.
+*
+Open Segment "2020.xeq"
+Read Segment Main, Do(Compile)
+Open Segment "EControl.XEQ"
+Read Segment EControl
+*
+Select Output AccCoalRetire_47.log
+*
+OpenDB
+DBOpen
+*
+Define Variable
+UnArea(Unit)  'Area Pointer', Type=String(15),
+ Disk(EGInput,UnArea(Unit))
+UnGenCo(Unit) 'Generating Company', Type=String(15),
+ Disk(EGInput,UnGenCo(Unit))
+UnNode(Unit)  'Transmission Node', Type=String(15),
+ Disk(EGInput,UnNode(Unit)) 
+UnPlant(Unit) 'Plant Type', Type=String(15),
+ Disk(EGInput,UnPlant(Unit)) 
+End Define Variable
+*
+************************
+*
+Define Procedure GetUnitSets
+*
+Select GenCo*
+Select GenCo if GCoKey eq UnGenCo
+Select Plant*
+Select Plant if PlnKey eq UnPlant
+Select Node*
+Select Node if NodeKey eq UnNode
+Select Area*
+Select Area if AreaKey eq UnArea
+*
+End Procedure GetUnitSets
+*
+************************
+*
+Define Procedure ResetUnitSets
+*
+Select GenCo*, Plant*, Node*, Area*
+*
+End Procedure ResetUnitSets
+*
+Define Variable
+UCode    'Scratch Variable for UnCode', Type=String(20)
+UnCode(Unit)  'Unit Code', Type=String(20),
+ Disk(EGInput,UnCode(Unit))
+UnRetire(Unit,Year)     'Retirement Date (Year)',
+ Disk(EGInput,UnRetire(Unit,Year))
+URetire  'New Retirement Date (Year)'
+End Define Variable
+*
+************************
+*
+Define Procedure GetUnitData
+*
+* Read a line of data
+*
+Read (UCode\1:20,URetire\25:30)
+*
+* If not end, then select the proper Unit
+*
+Do If UCode::0 ne "EOD"
+  Select Unit*
+  Select Unit If UCode::0 eq UnCode::0
+  GetUnitSets
+  Do If Unit:n gt 1
+    Write ("Could not match UnCode ",UCode::0)
+    Ask "Continue"End
+    End
+  Else
+    Select Year*
+    UnRetire=URetire
+  End Do If Unit:n gt 1
+*
+* Call Procedure to read next record
+*
+  GetUnitData
+End Do If UnCode ne "EOD"
+*
+End Define Procedure GetUnitData
+*
+Read Disk(UnRetire)
+*
+GetUnitData
+/UnCode                UnRetire
+AB_New_26                2030
+AB00001300201            2030
+AB00001300202            2030
+AB00001300203            2030
+AB00029600801            2030
+AB00029600802            2030
+NB00006601301            2030
+NS00008003801            2030
+NS00008003803            2030
+NS00008003804            2030
+NS00008003901            2030
+NS00008004001            2030
+NS00008004101            2030
+NS00008004102            2030
+SK00015301501            2030
+EOD                      2035
+*
+Write Disk(UnRetire)
+*
+************************
+*
+CloseDB
+DBClose
+*
+************************
+*
+Write ("AccCoalRetire_2030.txp has completed successfully")
+Select Output Shell.log
+Write ("Shell.log file for AccCoalRetire_2030.txp.")
+Stop Promula
+

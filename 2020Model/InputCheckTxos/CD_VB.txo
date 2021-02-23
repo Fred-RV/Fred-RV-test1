@@ -1,0 +1,55 @@
+*
+* CD_VB.txo
+*
+Select Output CD_VB.log
+*
+Open Segment "2020.xeq"
+Read Segment Main, Do(Compile)
+Open Segment "EControl.xeq"
+Read Segment EControl
+*
+OpenDB
+DBOpen
+*
+Define File
+OFile Type=Text
+End Define File
+*
+Define Variable
+CD(Plant,Year)  'Construction Delay (Years)',  
+  Disk(EGInput,CD(Plant,Year))
+ANMap(Area,Nation)  'Map between Area and Nation (Map)',  
+  Disk(SInput,ANMap(Area,Nation))
+ZZZ      'Variable for Displaying Outputs', Type=Real(15,6)
+End Define Variable
+*
+*
+OutFil ="CD.log"
+Open OFile "CD_Check.dat", Status=New
+*
+*
+Select Nation(CN)
+Select Area*
+Select Area If ANMap eq 1
+*
+Write OFile ( "Variable;Plant;Year;Units;Data")
+*
+Do Plant
+Do Year
+Select vArea If vAreaMap eq 1
+
+  ZZZ = CD * 1
+  Do If ZZZ ne 0
+    Write OFile ("CD;", PLNDS::0,";", YrvDS,";", "Years;", ZZZ:15:e)
+  End Do If
+
+End Do Year
+End Do Plant
+Select Unit*
+*
+CloseDB
+DBClose
+*
+Select Output CD_VB.log
+Write (OutFil, " has completed successfully.")
+Stop Promula

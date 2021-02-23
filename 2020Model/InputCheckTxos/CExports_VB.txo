@@ -1,0 +1,53 @@
+*
+* CExports_VB.txo
+*
+Select Output CExports_VB.log
+*
+Open Segment "2020.xeq"
+Read Segment Main, Do(Compile)
+Open Segment "SControl.xeq"
+Read Segment SControl,Do(Compile)
+*
+OpenDB
+DBOpen
+*
+Define File
+OFile Type=Text
+End Define File
+*
+Define Variable
+CExports(Area,Year)  'Coal Exports (TBtu/Yr)',  
+  Disk(SPOutput,CExports(Area,Year))
+ANMap(Area,Nation)  'Map between Area and Nation (Map)',  
+  Disk(SInput,ANMap(Area,Nation))
+ZZZ      'Variable for Displaying Outputs', Type=Real(15,6)
+End Define Variable
+*
+*
+OutFil ="CExports.log"
+Open OFile "CExports_Check.dat", Status=New
+*
+*
+Select Nation(CN)
+Select Area*
+Select Area If ANMap eq 1
+*
+Write OFile ( "Variable;Area;Year;Units;Data")
+*
+Do Area
+Do Year
+Select vArea If vAreaMap eq 1
+
+  ZZZ = CExports * 1054.615
+  Do If ZZZ ne 0
+    Write OFile ("CExports;", AreaDS::0,";", YrvDS,";", "TBtu/Yr;", ZZZ:15:e)
+  End Do If
+
+End Do Year
+End Do Area
+CloseDB
+DBClose
+*
+Select Output CExports_VB.log
+Write (OutFil, " has completed successfully.")
+Stop Promula

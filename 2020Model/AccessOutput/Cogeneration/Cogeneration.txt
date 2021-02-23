@@ -1,0 +1,12 @@
+*
+* Cogeneration.txt - List of .txo files to run and move output dta to Access DB with same name as this file
+*
+zCgDemand
+zCgDemandSector
+zCgDemandUnit
+zCgGen
+zCgGenSector
+zCgGenUnit
+zCgCap
+zCgCapSector
+zCgCapUnit

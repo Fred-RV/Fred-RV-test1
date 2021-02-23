@@ -1,0 +1,82 @@
+*
+* zCgCap.txo
+*
+Select Output zCgCap.log
+*
+Open Segment "2020.xeq"
+Read Segment Main, Do(Compile)
+*
+OpenDB
+*
+Define Variable
+*
+zCgCap(Fuel,ECC,Area,Year)  'Cogeneration Capacity (MW)',  
+  Disk(SOutput,CgCap(Fuel,ECC,Area,Year))
+zCgCapRef(Fuel,ECC,Area,Year)  'Cogeneration Capacity (MW)',  
+  Disk(SOutput,CgCap(Fuel,ECC,Area,Year))
+*
+ANMap(Area,Nation)  'Map between Area and Nation (Map)',  
+  Disk(SInput,ANMap(Area,Nation))
+Conversion(Nation,Year) 'Units Conversion Factor'
+UnitsDS(Nation)    'Units Description', Type=String(40)
+CCC      'Variable for Displaying Outputs', Type=Real(15,6)
+ZZZ      'Variable for Displaying Outputs', Type=Real(15,6)
+*
+End Define Variable
+*
+Conversion(US,Y)=1.0
+UnitsDS(US)="MW"
+Conversion(CN,Y)=1.0
+UnitsDS(CN)="MW"
+*
+***********************
+Define Procedure DtaRun
+*
+OutFil="zCgCap-"+NatKey::0+"-"+SceName::0+".dta"
+*
+Select Output OutFil, Width=1300, Printer=On, Comma=Off
+*
+*
+Do If (BaseSW eq 0)
+  FText1=InitialName::0+Slash::0+"SOutput.dba"
+  Open SOutput FText1
+  Read Disk(zCgCapRef)
+  Open SOutput "SOutput.dba"
+End Do If (BaseSW eq 0)
+*
+Write ("Variable;Year;Area;Sector;Fuel;Units;zData;zInitial")
+*
+Select Year(1-EndYear)
+Select Area*
+Select Area If ANMap eq 1
+*
+Do Fuel
+  Do ECC
+    Do Area
+      Do Year
+        ZZZ=zCgCap*Conversion
+        CCC=zCgCapRef*Conversion
+        Do If (ZZZ ne 0) or (CCC ne 0)
+          Write ("zCgCap;", Year,";", AreaDS::0,";", ECCDS::0,";", FuelDS::0,";", UnitsDS::0,";", ZZZ:15:e, ";" , CCC:15:e)
+        End Do If
+      End Do Year
+    End Do Area
+  End Do ECC
+End Do Fuel
+*
+End Procedure DtaRun
+***********************
+*
+Select Nation(CN,US)
+Do Nation
+  Do If NationOutputMap eq 1
+    DtaRun
+  End Do If NationOutputMap
+End Do Nation
+Select Nation*
+*
+CloseDB
+*
+Select Output zCgCap.log
+Write (OutFil, " has completed successfully.")
+Stop Promula

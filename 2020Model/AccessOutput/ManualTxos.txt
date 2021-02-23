@@ -1,0 +1,39 @@
+(EconomicDrivers)
+zDriver
+zEnergyIntensity
+zFP
+zFPECC - Weighted by TotDemand
+zFPPCost - Weighted by TotDemand
+
+(EnergyDemands)
+zDmd
+zDmdNet
+zTrDmd
+
+(EnergySupply)
+zLLEffLoss
+zTDEFLoss
+
+(Expenditures)
+zTaxExp
+zPExp
+zPRExp
+
+(Pollution)
+zEnNonCgFPol
+
+(Transportation)
+
+zTrDCC - Weighted by VDT
+zTrDEE - Weighted by VDT
+zTrDEEA - Weighted by VDT
+zTrMMSF
+zTrOREnFPol
+zTrORMEPol
+zTrTKM
+zTrDmd
+zTrFsDmd
+zTrNcFPol
+zTrMEPol
+zTrPol
+zTrVDT

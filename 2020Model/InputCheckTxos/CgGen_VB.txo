@@ -1,0 +1,57 @@
+*
+* CgGen_VB.txo
+*
+Select Output CgGen_VB.log
+*
+Open Segment "2020.xeq"
+Read Segment Main, Do(Compile)
+Open Segment "SControl.xeq"
+Read Segment SControl,Do(Compile)
+*
+OpenDB
+DBOpen
+*
+Define File
+OFile Type=Text
+End Define File
+*
+Define Variable
+CgGen(Fuel,ECC,Area,Year)  'Cogeneration Generation (GWh/Yr)',  
+  Disk(SOutput,CgGen(Fuel,ECC,Area,Year))
+ANMap(Area,Nation)  'Map between Area and Nation (Map)',  
+  Disk(SInput,ANMap(Area,Nation))
+ZZZ      'Variable for Displaying Outputs', Type=Real(15,6)
+End Define Variable
+*
+*
+OutFil ="CgGen.log"
+Open OFile "CgGen_Check.dat", Status=New
+*
+*
+Select Nation(CN)
+Select Area*
+Select Area If ANMap eq 1
+*
+Write OFile ( "Variable;Fuel;Sector;Area;Year;Units;Data")
+*
+Do Fuel
+Do ECC
+Do Area
+Do Year
+Select vArea If vAreaMap eq 1
+
+  ZZZ = CgGen * 1000
+  Do If ZZZ ne 0
+    Write OFile ("CgGen;", FuelDS::0,";", ECCDS::0,";", AreaDS::0,";", YrvDS,";", "GWh/Yr;", ZZZ:15:e)
+  End Do If
+
+End Do Year
+End Do Area
+End Do ECC
+End Do Fuel
+CloseDB
+DBClose
+*
+Select Output CgGen_VB.log
+Write (OutFil, " has completed successfully.")
+Stop Promula

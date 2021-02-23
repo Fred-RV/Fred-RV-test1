@@ -1,0 +1,137 @@
+*
+* ACSaturation_Forecast.txt - Read in historical AC saturation rates
+*
+Select Output ACSaturation_Forecast.txt.log
+*
+Open Segment "2020.XEQ"
+Read Segment Main,Do(Compile)
+Open Segment "RControl.XEQ"
+Read Segment RControl
+*
+OpenDB
+DBOpen
+*
+Define Variable
+GrowthRate(Enduse,EC,Area)   'Saturation Growth Rate (1/Yr)'
+LongTime 'Long Time for Smoothing (Years)'
+ShortTime     'Short Time for Smoothing (Years)'
+XDST(Enduse,EC,Area,Year)    'Device Saturation (Btu/Btu)',
+  Disk(Input,XDST(Enduse,EC,Area,Year))
+XDSTLongSm(Enduse,EC,Area,Year)   'Device Saturation Smoothed over Long Time (Btu/Btu)'
+XDSTMax(Enduse,EC,Area) 'Maximum Saturation without Climate Change (Btu/Btu)'
+XDSTShortSm(Enduse,EC,Area,Year)  'Device Saturation Smoothed over Short Time (Btu/Btu)'
+End Define Variable
+*
+* Last Year for AC Saturation Data
+*
+Last=2012-ITime+1
+Future=Last+1
+*
+Select Enduse(AC)
+*
+LongTime=10
+ShortTime=3
+*
+* Smooth Saturation
+*
+Select Year(Zero)
+XDSTLongSm=XDST
+XDSTShortSm=XDST
+Select Year(First-Last)
+XDSTLongSm(EU,EC,A,Y)=XDSTLongSm(EU,EC,A,Y-1)*(1-1/LongTime)+
+                      XDST(EU,EC,A,Y)*(1/LongTime)
+XDSTShortSm(EU,EC,A,Y)=XDSTShortSm(EU,EC,A,Y-1)*(1-1/ShortTime)+
+                       XDST(EU,EC,A,Y)*(1/ShortTime)
+*
+* Saturation Growth Rate
+*
+Select Year(Last)
+GrowthRate=(XDSTShortSm/XDSTLongSm-1)/LongTime
+*
+* Maximum Saturation without Climate Change
+*
+Select Year(Last)
+XDSTMax=xmax(xmin(XDST+(1-XDST)*0.50,0.98),XDST)
+*
+* Forecast Saturation
+*
+Select Year(Future-Final)
+XDST(EU,EC,A,Y)=xmin(XDST(EU,EC,A,Y-1)*(1+GrowthRate(EU,EC,A)),XDSTMax(EU,EC,A))
+Select Enduse*, Year*
+*
+Write Disk(XDST)
+*
+************************
+*
+DBClose
+CloseDB
+*
+************************
+*
+Open Segment "2020.XEQ"
+Read Segment Main,Do(Compile)
+Open Segment "CControl.XEQ"
+Read Segment CControl
+*
+OpenDB
+DBOpen
+*
+Define Variable
+GrowthRate(Enduse,EC,Area)   'Saturation Growth Rate (1/Yr)'
+LongTime 'Long Time for Smoothing (Years)'
+ShortTime     'Short Time for Smoothing (Years)'
+XDST(Enduse,EC,Area,Year)    'Device Saturation (Btu/Btu)',
+  Disk(Input,XDST(Enduse,EC,Area,Year))
+XDSTLongSm(Enduse,EC,Area,Year)   'Device Saturation Smoothed over Long Time (Btu/Btu)'
+XDSTMax(Enduse,EC,Area) 'Maximum Saturation without Climate Change (Btu/Btu)'
+XDSTShortSm(Enduse,EC,Area,Year)  'Device Saturation Smoothed over Short Time (Btu/Btu)'
+End Define Variable
+*
+* Last Year for AC Saturation Data
+*
+Last=2012-ITime+1
+Future=Last+1
+*
+Select Enduse(AC)
+*
+LongTime=10
+ShortTime=3
+*
+* Smooth Saturation
+*
+Select Year(Zero)
+XDSTLongSm=XDST
+XDSTShortSm=XDST
+Select Year(First-Last)
+XDSTLongSm(EU,EC,A,Y)=XDSTLongSm(EU,EC,A,Y-1)*(1-1/LongTime)+
+                      XDST(EU,EC,A,Y)*(1/LongTime)
+XDSTShortSm(EU,EC,A,Y)=XDSTShortSm(EU,EC,A,Y-1)*(1-1/ShortTime)+
+                       XDST(EU,EC,A,Y)*(1/ShortTime)
+*
+* Saturation Growth Rate
+*
+Select Year(Last)
+GrowthRate=(XDSTShortSm/XDSTLongSm-1)/LongTime
+*
+* Maximum Satruation without Climate Change
+*
+Select Year(Last)
+XDSTMax=xmax(xmin(XDST+(1-XDST)*0.50,0.98),XDST)
+*
+* Forecast Saturation
+*
+Select Year(Future-Final)
+XDST(EU,EC,A,Y)=xmin(XDST(EU,EC,A,Y-1)*(1+GrowthRate(EU,EC,A)),XDSTMax(EU,EC,A))
+Select Enduse*, Year*
+*
+Write Disk(XDST)
+*
+************************
+*
+DBClose
+CloseDB
+*
+Write ("ACSaturation_Forecast.txt has completed successfully.")
+Select Output Shell.log
+Write ("ACSaturation_Forecast.txt creates Shell.log file.")
+Stop Promula
